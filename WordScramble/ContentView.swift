@@ -19,11 +19,15 @@ struct ContentView: View {
             List{
                 Section{
                     TextField("Enter your word", text: $newWord)
+                        .autocapitalization(.none)
                 }
                 
                 Section{
                     ForEach(usedWords, id: \.self) {word in
-                        Text(word)
+                        HStack{
+                            Image(systemName: "\(word.count).circle")
+                            Text(word)
+                        }
                         
                     }
                 }
@@ -43,8 +47,10 @@ struct ContentView: View {
         //the guard keyword ensures that nothing beyond this statement runs function will be broken at this point if count is less than zero
             
             //Extra validation to come
-            
+        withAnimation{
             usedWords.insert(answer, at: 0) //answer will be inserted at the beginning of the array.
+        }
+           
             newWord = ""
             
         }
