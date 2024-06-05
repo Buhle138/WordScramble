@@ -35,7 +35,7 @@ struct ContentView: View {
     
     func addNewWord(){
         
-        //trimming the white space to avoid white space being used as a character.
+        //trimming the white space to avoid white space being used as a character.s
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
         //answer must be greater than zero or else break method meaning we don't want to submit an empty String.
