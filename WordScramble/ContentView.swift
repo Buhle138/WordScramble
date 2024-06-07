@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var usedWords = [String]()
+    //rootword contains the word that the player has to play from.
     @State private var rootWord = ""
     @State private var newWord = ""
     
@@ -34,6 +35,7 @@ struct ContentView: View {
             }
             .navigationTitle(rootWord)
             .onSubmit(addNewWord)
+            .onAppear(perform: startGame) //We want to load the file before we can load the user interface. 
         }
     }
     
@@ -54,7 +56,27 @@ struct ContentView: View {
             newWord = ""
             
         }
+    //what should we do if the program  can't find start.txt file in our app bundle.
+    //And if we can't load it what should we do again.
+    //We use the fatalError method which handles the error for us just like we did in java
+    //FataError will kill the entire application.
+    func startGame() {
+        if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt"){
+            //loading start words
+            
+            // this if statement is handling errors after the try? block.
+            //this if statement will only run if there are no errors in the startWordsURL. this is what this line of code means in the if statement.
+            if let startWords = try? String(contentsOf: startWordsURL){
+                let allwords = startWords.components(separatedBy: "\n")
+                //randomElement returns an optional string (A string that can have a value or be null).
+               //In our case below rootWord is not an optional string so therefore we will need to provide a default value to rootWord of silkworm to cover up that null response.
+                rootWord = allwords.randomElement() ?? "silkworm"
+                return
+            }
+        }
         
+        fatalError("could not load start.txt from bundle.")
+        }
     }
   
 
