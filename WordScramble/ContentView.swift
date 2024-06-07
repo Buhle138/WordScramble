@@ -12,6 +12,9 @@ struct ContentView: View {
     //rootword contains the word that the player has to play from.
     @State private var rootWord = ""
     @State private var newWord = ""
+    @State private var errorTitle = ""
+    @State private var errorMessage = ""
+    @State private var showingError = false
     
     
     var body: some View {
@@ -35,7 +38,12 @@ struct ContentView: View {
             }
             .navigationTitle(rootWord)
             .onSubmit(addNewWord)
-            .onAppear(perform: startGame) //We want to load the file before we can load the user interface. 
+            .onAppear(perform: startGame) //We want to load the file before we can load the user interface.
+            .alert(errorTitle, isPresented: $showingError){
+                Button("Ok", role: .cancel){}
+            }message: {
+                Text(errorMessage)
+            }
         }
     }
     
@@ -48,11 +56,23 @@ struct ContentView: View {
         guard answer.count > 0 else{return }//checks if the 'answer' string is not empty (its length is greater than 0)
         //the guard keyword ensures that nothing beyond this statement runs function will be broken at this point if count is less than zero
             
+        guard isOriginal(word: answer) else{
+            wordError(title: "Word is used already", message: "Be more original")
+            return
+        }
+        guard  isPossible(word: answer) else{
+            wordError(title: "Word not possible", message: "You can't spell that word from '\(rootWord)'")
+            return
+        }
+        
+        guard isReal(word: answer) else{
+            wordError(title: "Word not recognized", message: "You can't just make them up")
+            return
+        }
             //Extra validation to come
         withAnimation{
             usedWords.insert(answer, at: 0) //answer will be inserted at the beginning of the array.
         }
-           
             newWord = ""
             
         }
@@ -74,11 +94,55 @@ struct ContentView: View {
                 return
             }
         }
-        
         fatalError("could not load start.txt from bundle.")
         }
+    
+    //Below we are making sure the user can't enter invalid words.
+    //isOriginal is checking if the word hasn't been used before returns true if it was.
+    
+    func isOriginal(word: String) -> Bool{
+        !usedWords.contains(word)
+    }
+    
+    func isPossible(word: String) -> Bool{
+        
+        
+        var tempword = rootWord
+        
+        //checking if a random word (rootWord from txt file) can be made from the letters of another random word.
+        //getting each letter the user has entered.
+        for letter in word{
+            if let pos = tempword.firstIndex(of: letter){
+                tempword.remove(at: pos)
+            }else{
+                return false
+            }
+        }
+        
+        return true
+        }
+    
+    //checking our string for mispelled words.
+
+    func isReal(word:  String) -> Bool{
+        
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: word.utf16.count)
+        let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
+        
+        //returns true if the word is correct and returns false if the word is mispelled.
+        return misspelledRange.location == NSNotFound
+    }
+    
+    func wordError(title: String, message: String){
+        errorTitle = title
+        errorMessage = message
+        showingError = true
+    }
+
     }
   
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
